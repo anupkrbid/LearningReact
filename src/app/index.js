@@ -1,4 +1,5 @@
-import { createStore, combineReducers } from "redux";
+import { createStore, combineReducers, applyMiddleware } from "redux";
+import logger from "redux-logger";
 
 
 const userReducer = ( state = {}, action ) => {
@@ -21,6 +22,13 @@ const userReducer = ( state = {}, action ) => {
 				...state,
 				age: action.payload
 			};
+			break;
+
+		}
+
+		case "E": {
+
+			throw new Error( "Custom Error Handler" );
 			break;
 
 		}
@@ -49,7 +57,21 @@ const reducers = combineReducers( {
 	tweet: tweetReducer
 } );
 
-const store = createStore ( reducers );
+const error = (store) => (next) => (action) => {
+
+	try {
+
+		next(action);
+
+	} catch ( e ) {
+
+		console.log( "Error: ", e );
+
+	}
+
+};
+
+const store = createStore ( reducers, applyMiddleware( logger ) );
 
 store.subscribe ( () => console.log( 'State Changed', store.getState() ) );
 
@@ -62,3 +84,8 @@ store.dispatch ( {
 	type: "CHANGE_AGE",
 	payload: 35
 } );
+
+// store.dispatch ( {
+// 	type: "E",
+// 	payload: 35
+// } );
